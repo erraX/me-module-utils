@@ -1,0 +1,30 @@
+{
+  "name": "me-module-utils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "modules.root": "./es",
+  "jsnext:main": "./es/index.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:lib && npm run build:es",
+    "build:lib": "cross-env BABEL_ENV=cjs babel src --out-dir lib",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
+    "clean": "rimraf $(cd src; ls) lib es",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/preset-env": "^7.1.6",
+    "babel-loader": "^8.0.4",
+    "browser-env": "^3.2.5",
+    "cross-env": "^5.2.0",
+    "relative": "^3.0.2",
+    "rimraf": "^2.6.2"
+  }
+}

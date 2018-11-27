@@ -1,0 +1,30 @@
+{
+  "plugins": ["@babel/plugin-proposal-object-rest-spread"],
+  "env": {
+    "cjs": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "node": true
+            }
+          }
+        ]
+      ]
+    },
+    "es": {
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "node": true
+            },
+            "modules": false
+          }
+        ]
+      ]
+    }
+  }
+}
