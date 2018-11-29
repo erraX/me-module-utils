@@ -1,25 +1,24 @@
 {
   "plugins": ["@babel/plugin-proposal-object-rest-spread"],
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": true
+        }
+      }
+    ]
+  ],
   "env": {
-    "cjs": {
-      "presets": [
-        [
-          "@babel/preset-env",
-          {
-            "targets": {
-              "node": "8"
-            }
-          }
-        ]
-      ]
-    },
+    "cjs": {},
     "es": {
       "presets": [
         [
           "@babel/preset-env",
           {
             "targets": {
-              "node": "8"
+              "node": true
             },
             "modules": false
           }
@@ -27,16 +26,15 @@
       ]
     },
     "test": {
-      "ignore": [
-        "test/codebase"
-      ],
       "presets": [
         [
           "@babel/preset-env",
           {
             "targets": {
-              "node": "8"
-            }
+              "node": true
+            },
+            "modules": "auto",
+            "loose": true
           }
         ]
       ]

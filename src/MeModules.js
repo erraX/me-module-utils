@@ -1,139 +1,170 @@
 import {join} from 'path';
-import {safeReadFileSync, getMatchedExportsName} from './utils';
+import {cloneDeep, find, each, isString} from 'lodash';
+import {
+    isMeModule,
+    normalizeVariableName,
+    safeReadFileSync,
+    getMatchedExportsName
+} from './utils';
 
-function validateName(name) {
-    return name.replace(/-/g, '_').replace(/\./, '_');
-}
-
+/**
+ * MeModules
+ *
+ * @class
+ */
 export default class MeModules {
+
+    /**
+     * 构造函数
+     *
+     * @constructor
+     * @param {Object} options 配置
+     * @param {string} options.basePath 前端脚本根路径
+     */
     constructor({basePath}) {
         this.basePath = basePath;
-        this.modules = global.me._modules;
-        this.digg();
-        console.log(this.modules);
+        this.modules = cloneDeep(global.me._modules);
+        this.prepareModules(this.modules);
+        this.digg(this.modules);
     }
 
-    add(name, mod) {
-        this.modules[name] = mod;
-    }
-
-    remove(name) {
-        delete this.modules[name];
-    }
-
+    /**
+     * 获取所有模块对象
+     *
+     * @returns {Object}
+     */
     getModules() {
         return this.modules;
     }
 
-    getModule({src, name}) {
-        if (name) {
-            return this.modules[name];
-        }
-        if (src) {
-            return this.getModuleByAbsSrc(src);
-        }
-        return null;
+    /**
+     * 根据模块名获取某个模块
+     *
+     * @param {string} name 模块名
+     * @returns {Object}
+     */
+    getModuleByName(name) {
+        return this.modules[name];
     }
 
+    /**
+     * 获取某个模块
+     *
+     * @param {Object} options options
+     * @param {string} options.src 文件路径
+     * @param {string} options.name 模块名
+     * @returns {Object}
+     */
+    get({src, name}) {
+        return this.getModuleByName(name)
+            || this.getModuleByAbsSrc(src);
+    }
+
+    /**
+     * 删除某个模块
+     */
+    remove(name) {
+        delete this.modules[name];
+    }
+
+    /**
+     * 根据绝对路径获取某个模块
+     *
+     * @param {string} src 文件路径
+     * @returns {Object}
+     */
     getModuleByAbsSrc(src) {
-        let matchedMod;
-        this.each(mod => {
-            if (mod.absolutePath === src) {
-                matchedMod = mod;
-                return true;
-            }
-        });
-        return matchedMod;
+        return find(this.modules, ({absolutePath}) => absolutePath === src);
     }
 
-    digg() {
-        this.diggCss();
-        this.diggSelfExports();
-        this.diggDeps();
-    }
+    prepareModules(modules) {
+        const resolve = p => join(this.basePath, p);
 
-    diggDeps() {
-        this.each((mod, name) => {
-            mod.deps = this.flattenModuleDeps('', mod);
-            delete mod.deps[name];
-        });
-    }
-
-    diggSelfExports() {
-        const diggFn = (mod, name) => {
-            const absolutePath = this.resolve(mod.src);
+        each(modules, (mod, name) => {
+            const absolutePath = resolve(mod.src);
             const code = safeReadFileSync(absolutePath);
 
-            // 模块虽然定义了，但是文件不存在
             if (!code) {
-                this.remove(name);
+                delete modules[name];
                 return;
             }
 
-            mod.isMeModule = code.indexOf('me.provide') > -1 || code.indexOf('me.require') > -1;
-            mod.name = validateName(name);
-            mod.code = code;
             mod.absolutePath = absolutePath;
-            mod.selfExports = getMatchedExportsName(code);
-        };
+            mod.code = code;
+            mod.name = normalizeVariableName(name);
+            mod.isMeModule = isMeModule(code);
+            mod.require = mod.require || [];
 
-        this.each(diggFn);
-    }
-
-    diggCss() {
-        this.each((mod, name) => {
-            let css = mod.css || (mod.css = []);
-            const basePath = this.basePath.replace('scripts', 'styles');
-
-            if (!Array.isArray(css)) {
-                css = [css];
+            if (mod.src !== 'lib/me.js'
+                && !~mod.require.indexOf('mejs')
+                && mod.isMeModule) {
+                mod.require.unshift('mejs');
             }
-
-            mod.css = css.map(src => join(basePath, src));
         });
     }
 
-    flattenModuleDeps(name, mod, deps = {}) {
-        if (!mod) {
-            return;
+    /**
+     * 分析依赖关系
+     */
+    digg(modules) {
+        this.diggCss(modules);
+        this.diggSelfExports(modules);
+        this.diggDeps(modules);
+    }
+
+    /**
+     * 分析每个模块的依赖关系
+     */
+    diggDeps(modules) {
+        each(modules, mod => mod.deps = this.flattenModuleDeps(true, modules, mod));
+    }
+
+    /**
+     * 分析每个模块自己export的变量
+     */
+    diggSelfExports(modules) {
+        each(modules, mod => {
+            mod.selfExports = getMatchedExportsName(mod.code);
+        });
+    }
+
+    /**
+     * 分析每个模块依赖的CSS
+     */
+    diggCss(modules) {
+        const cssBasePath = this.basePath.replace('scripts', 'styles');
+        const resolve = p => join(cssBasePath, p);
+
+        each(modules, mod => {
+            let css = mod.css || (mod.css = []);
+            css = Array.isArray(css) ? css : [css];
+            mod.css = css
+                .map(src => isString(src) ? resolve(src) : null)
+                .filter(Boolean);
+        });
+    }
+
+    /**
+     * 扁平化模块依赖
+     *
+     * @param {boolean} isRoot 是不是需要分析的根模块
+     * @param {Object} modules 所有模块
+     * @param {Object} mod 模块
+     * @param {Object} deps 输出的依赖
+     * @return {Object}
+     */
+    flattenModuleDeps(isRoot, modules, mod, deps = {}) {
+        if (!mod || deps.hasOwnProperty(mod.name)) {
+            return deps;
         }
 
-        if (name && deps.hasOwnProperty(name)) {
-            return;
+        if (!isRoot) {
+            deps[mod.name] = [].slice.call(mod.selfExports);
         }
 
-        if (name) {
-            const selfExports = mod.selfExports;
-            deps[name] = [].slice.call(selfExports);
-        }
-
-        if (!mod.require) {
-            mod.require = [];
-        }
-
-        const req = mod.require;
-
-        if (mod.src !== 'lib/me.js'
-            && req.indexOf('mejs') === -1
-            && mod.isMeModule) {
-            req.push('mejs');
-        }
-
-        if (req && req.length) {
-            req.forEach(name => this.flattenModuleDeps(name, this.modules[name], deps));
-        }
+        (mod.require || [])
+            .forEach(dep => this.flattenModuleDeps(false, modules, modules[dep], deps));
 
         return deps;
-    }
-
-    each(iter) {
-        const modules = this.modules;
-        return Object
-            .keys(modules)
-            .some(name => iter(modules[name], name));
-    }
-
-    resolve(path) {
-        return join(this.basePath, path);
     }
 }

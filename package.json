@@ -1,7 +1,7 @@
 {
   "name": "me-module-utils",
   "version": "1.0.0",
-  "description": "",
+  "description": "Me Module utils",
   "main": "./lib/index.js",
   "module": "./es/index.js",
   "modules.root": "./es",
@@ -11,20 +11,32 @@
     "build:lib": "cross-env BABEL_ENV=cjs babel src --out-dir lib",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
     "clean": "rimraf $(cd src; ls) lib es",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test jest",
+    "watch:test": "NODE_ENV=test jest --watch",
+    "publish": "npm run build && npm run test && npm publish"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "mejs"
+  ],
+  "author": "niminjie",
   "license": "ISC",
+  "dependencies": {
+    "relative": "^3.0.2",
+    "lodash": "^4.17.11",
+    "browser-env": "^3.2.5"
+  },
   "devDependencies": {
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.1.6",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
     "@babel/preset-env": "^7.1.6",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.4",
-    "browser-env": "^3.2.5",
     "cross-env": "^5.2.0",
-    "relative": "^3.0.2",
+    "jest": "^23.6.0",
+    "jest-extended": "^0.11.0",
+    "regenerator-runtime": "^0.13.1",
     "rimraf": "^2.6.2"
   }
 }
