@@ -1,6 +1,6 @@
 {
   "name": "me-module-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Me Module utils",
   "main": "./lib/index.js",
   "module": "./es/index.js",
@@ -13,10 +13,16 @@
     "clean": "rimraf $(cd src; ls) lib es",
     "test": "NODE_ENV=test jest",
     "watch:test": "NODE_ENV=test jest --watch",
-    "publish": "npm run build && npm run test && npm publish"
+    "publish:me": "npm run build && npm run test && npm publish"
   },
   "keywords": [
     "mejs"
+  ],
+  "files": [
+      "README.md",
+      "es",
+      "lib",
+      "src"
   ],
   "author": "niminjie",
   "license": "ISC",
