@@ -1,6 +1,6 @@
 {
   "name": "me-module-utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Me Module utils",
   "main": "./lib/index.js",
   "module": "./es/index.js",
@@ -19,10 +19,10 @@
     "mejs"
   ],
   "files": [
-      "README.md",
-      "es",
-      "lib",
-      "src"
+    "README.md",
+    "es",
+    "lib",
+    "src"
   ],
   "author": "niminjie",
   "license": "ISC",

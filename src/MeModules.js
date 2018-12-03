@@ -91,7 +91,8 @@ export default class MeModules {
 
             mod.absolutePath = absolutePath;
             mod.code = code;
-            mod.name = normalizeVariableName(name);
+            mod.name = name;
+            mod.varName = normalizeVariableName(name);
             mod.isMeModule = isMeModule(code);
             mod.require = mod.require || [];
 

@@ -1,4 +1,4 @@
-import {isNumber, isString} from 'lodash';
+import {find, isNumber, isString} from 'lodash';
 import fs from 'fs';
 import relative from 'relative';
 
@@ -15,7 +15,7 @@ export function isMeModule(code) {
         return false;
     }
 
-    return !!~code.indexOf('me.provide') || !!~code.indexOf('me.require');
+    return code.includes('me.provide') || code.includes('me.require');
 }
 
 /**
