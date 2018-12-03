@@ -13,7 +13,7 @@
     "clean": "rimraf $(cd src; ls) lib es",
     "test": "NODE_ENV=test jest",
     "watch:test": "NODE_ENV=test jest --watch",
-    "publish:me": "npm run build && npm run test && npm publish"
+    "prepare": "npm run build && npm run test"
   },
   "keywords": [
     "mejs"
