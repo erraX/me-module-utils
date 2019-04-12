@@ -20,6 +20,7 @@ export default function env({basePath}) {
     delete require.cache[resolve('lib/me.js')];
     delete require.cache[resolve('lib/me.ext.js')];
     delete require.cache[resolve('lib/require.js')];
+    delete require.cache[resolve('lib/merge_require.js')];
     delete require.cache[resolve('app/app.js')];
 
     // Polyfill browser env
@@ -36,6 +37,7 @@ export default function env({basePath}) {
     require(resolve('lib/me.js'));
     require(resolve('lib/me.ext.js'));
     require(resolve('lib/require.js'));
+    require(resolve('lib/merge_require.js'));
     require(resolve('app/app.js'));
 
     restorePolyfill();
